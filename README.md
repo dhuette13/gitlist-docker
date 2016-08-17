@@ -24,3 +24,6 @@ And run it like this
 
 The web interface will be available on host machine at port 8888 and will show
 repositories inside /path/repo
+
+Add .htpasswd file to conf subdirectory to enable password protection on gitlist instance. Password file can be generated with this website: http://www.tools.dynamicdrive.com/password/
+
