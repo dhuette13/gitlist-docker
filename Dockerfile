@@ -1,17 +1,30 @@
-FROM ubuntu
-RUN apt-get update
-RUN apt-get -y install git nginx-full php5-fpm curl
-ADD https://s3.amazonaws.com/gitlist/gitlist-master.tar.gz /var/www/
-RUN cd /var/www; tar -zxvf gitlist-master.tar.gz
-RUN chmod -R 777 /var/www/gitlist
-RUN cd /var/www/gitlist/; mkdir cache; chmod 777 cache
+FROM nginx
+
+MAINTAINER dhuette13 <dhuette13@yahoo.com>
+
+RUN apt-get update && apt-get install -y \
+                git \
+                php5-fpm \
+                curl \
+             && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www
+RUN mkdir -p ./gitlist && \
+    curl -SL https://s3.amazonaws.com/gitlist/gitlist-master.tar.gz \
+    | tar -xzvf - && \
+    chmod -R 777 ./gitlist
+
 WORKDIR /var/www/gitlist/
-ADD config.ini /var/www/gitlist/
-ADD nginx.conf /etc/
+RUN mkdir cache && \
+    chmod 777 cache
 
-RUN mkdir -p /repos/sentinel
-RUN cd /repos/sentinel; git --bare init .
+ADD config.ini .
+ADD nginx.conf /etc/nginx
+ADD conf/ /etc/nginx/conf/
 
-CMD service php5-fpm restart; nginx -c /etc/nginx.conf
+RUN mkdir -p /repos/sentinel && \
+    cd /repos/sentinel && \
+    git --bare init .
 
-
+ADD ./entry.sh /
+ENTRYPOINT ["/entry.sh"]
